@@ -1,30 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   scop.h                                             :+:      :+:    :+:   */
+/*   obj_loader.h                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2015/05/20 20:18:45 by zion              #+#    #+#             */
-/*   Updated: 2015/05/28 11:48:11 by rbenjami         ###   ########.fr       */
+/*   Created: 2015/05/26 13:52:35 by rbenjami          #+#    #+#             */
+/*   Updated: 2015/05/28 14:46:12 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SCOP_H
-# define SCOP_H
+#ifndef OBJ_LOADER_H
+# define OBJ_LOADER_H
 
 # include <libft.h>
-# include "object.h"
 
-typedef struct		s_scop
+typedef struct		s_obj
 {
-	GLFWwindow		*window;
-	int				width;
-	int				height;
-	TRAN			*view;
-	VEC2			motion;
-	uint8_t			have_focus;
-	t_list			object_list;
-}					t_scop;
+	t_list			vertex;
+	t_list			indices;
+}					t_obj;
+
+t_obj	*load_obj(const char *file);
+float	*get_vertex_buffer(t_obj *obj);
+int		*get_indices_buffer(t_obj *obj);
+float	*clac_normals(t_obj *obj);
 
 #endif
