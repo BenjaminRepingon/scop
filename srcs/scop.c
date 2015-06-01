@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/20 20:18:35 by zion              #+#    #+#             */
-/*   Updated: 2015/05/28 14:57:22 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/01 18:02:27 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ void	update_main_view(t_scop *scop)
 			top.x = 0;
 			top.y = 1;
 			top.z = 0;
-			quat = new_quaternion4vf(&top, scop->motion.x * 0.002);
+			quat = new_quaternion4vf(&top, scop->motion.x * -0.002);
 			quat = normalized4(mul4q(quat, &scop->view->rot));
 			scop->view->rot = *quat;
 			ft_memdel((void **)&quat);
@@ -98,7 +98,7 @@ void	update_main_view(t_scop *scop)
 		if (scop->motion.y)
 		{
 			VEC3	*right = rotate3q(new_vector3f(1, 0, 0), &scop->view->rot);
-			quat = new_quaternion4vf(right, scop->motion.y * 0.002);
+			quat = new_quaternion4vf(right, scop->motion.y * -0.002);
 			quat = normalized4(mul4q(quat, &scop->view->rot));
 			scop->view->rot = *quat;
 			ft_memdel((void **)&quat);
@@ -106,9 +106,9 @@ void	update_main_view(t_scop *scop)
 	}
 	VEC3	*forward = rotate3q(new_vector3f(0, 0, 1), &scop->view->rot);
 	if (key_pressed[GLFW_KEY_W])
-		add3v(&scop->view->pos, mul3f(forward, 0.5f));
-	if (key_pressed[GLFW_KEY_S])
 		add3v(&scop->view->pos, mul3f(forward, -0.5f));
+	if (key_pressed[GLFW_KEY_S])
+		add3v(&scop->view->pos, mul3f(forward, 0.5f));
 	ft_memdel((void **)&forward);
 
 	VEC3	*right = rotate3q(new_vector3f(1, 0, 0), &scop->view->rot);
@@ -130,7 +130,9 @@ void	init_scene(t_scop *scop, const char **argv)
 {
 	t_object	*plan;
 	t_object	*teapot;
+	t_light		*light;
 
+	// OBJECTS
 	plan = new_object("plan.obj");
 	plan->transform->scale.x = 10;
 	plan->transform->scale.y = 10;
@@ -138,6 +140,36 @@ void	init_scene(t_scop *scop, const char **argv)
 	teapot = new_object(argv[1]);
 	add_elem(&scop->object_list, teapot);
 	add_elem(&scop->object_list, plan);
+
+	// LIGHTS
+	light = new_light(scop->shaderProgram, "lights[0]");
+	light->ambient.x = 0.3f;
+	light->ambient.y = 0.0f;
+	light->ambient.z = 0.0f;
+	light->diffuse.x = 0.8f;
+	light->diffuse.y = 0.0f;
+	light->diffuse.z = 0.0f;
+	light->specular.x = 0.8f;
+	light->specular.y = 0.0f;
+	light->specular.z = 0.0f;
+	light->position.x = -5.0f;
+	light->position.y = -2.0f;
+	light->position.z = 10.0f;
+	add_elem(&scop->light_list, light);
+	light = new_light(scop->shaderProgram, "lights[1]");
+	light->ambient.x = 0.5f;
+	light->ambient.y = 0.5f;
+	light->ambient.z = 0.0f;
+	light->diffuse.x = 0.5f;
+	light->diffuse.y = 0.5f;
+	light->diffuse.z = 0.0f;
+	light->specular.x = 0.5f;
+	light->specular.y = 0.5f;
+	light->specular.z = 0.0f;
+	light->position.x = 20.0f;
+	light->position.y = -10.0f;
+	light->position.z = -50.0f;
+	add_elem(&scop->light_list, light);
 }
 
 int main(int argc, const char *argv[])
@@ -160,7 +192,7 @@ int main(int argc, const char *argv[])
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
 
-	scop->window = glfwCreateWindow(850, 550, "Simple example", NULL, NULL);
+	scop->window = glfwCreateWindow(850, 550, "Scop", NULL, NULL);
 	if (!scop->window)
 	{
 		glfwTerminate();
@@ -171,25 +203,25 @@ int main(int argc, const char *argv[])
 	glfwSetKeyCallback(scop->window, key_callback);
 	glfwSetMouseButtonCallback(scop->window, mouse_button_callback);
 
-	// Enable depth test
+	// glEnable(GL_DEPTH_TEST);
+	// glDepthFunc(GL_LESS);
+
+
+	glFrontFace(GL_CW);
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LESS);
 
 	GLuint vertex_array_id;
 	glGenVertexArrays(1, &vertex_array_id);
 	glBindVertexArray(vertex_array_id);
 
-	// t_obj	*obj = load_obj(argv[1]);
+	scop->shaderProgram = load_shaders("./vertex.glsl", "./fragment.glsl");
 
-	// GLfloat	*vertex_buffer_data = get_vertex_buffer(obj);
-	// GLint	*indices_buffer_data = get_indices_buffer(obj);
-
-	GLint	shaderProgram = load_shaders("./vertex.glsl", "./fragment.glsl");
-
-	GLint	model_matrix_id = glGetUniformLocation(shaderProgram, "model");
-	GLint	view_matrix_id = glGetUniformLocation(shaderProgram, "view");
-	GLint	projection_matrix_id = glGetUniformLocation(shaderProgram, "projection");
+	GLint	model_matrix_id = glGetUniformLocation(scop->shaderProgram, "model");
+	GLint	view_matrix_id = glGetUniformLocation(scop->shaderProgram, "view");
+	GLint	projection_matrix_id = glGetUniformLocation(scop->shaderProgram, "projection");
+	GLint	num_lights_matrix_id = glGetUniformLocation(scop->shaderProgram, "num_lights");
 
 
 	// MAT4	*model = init_scale(1, 1, 1);
@@ -199,46 +231,46 @@ int main(int argc, const char *argv[])
 	pos.y = 0;
 	pos.z = 0;
 	scop->view = new_transform();
-			// QUAT	*quat;
-			// quat = new_quaternion4vf(new_vector3f(0, 1, 0), -90.0f);
-			// scop->view->rot = *normalized4(mul4q(&scop->view->rot, quat));
+	scop->view->pos.x = 0;
+	scop->view->pos.y = -3;
+	scop->view->pos.z = 8;
 	MAT4	*projection = init_perspective(to_radians(70.0f), 850.0f / 550.0f, 0.01f, 1000.0f);
 
-	if (shaderProgram == -1)
+	if (scop->shaderProgram == -1)
 		exit_error("Unable to load shaders");
 
 	init_scene(scop, argv);
-	// GLuint vertex_buffer;// This will identify our vertex buffer
-	// glGenBuffers(1, &vertex_buffer);// Generate 1 buffer, put the resulting identifier in vertex_buffer
-	// glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);// The following commands will talk about our 'vertex_buffer' buffer
-	// glBufferData(GL_ARRAY_BUFFER, obj->vertex.size * sizeof(float) * 3, vertex_buffer_data, GL_STATIC_DRAW);// Give our vertices to OpenGL.
-
-	// GLuint indices_buffer;// This will identify our indices buffer
-	// glGenBuffers(1, &indices_buffer);// Generate 1 buffer, put the resulting identifier in indices_buffer
-	// glBindBuffer(GL_ARRAY_BUFFER, indices_buffer);// The following commands will talk about our 'indices_buffer' buffer
-	// glBufferData(GL_ARRAY_BUFFER, obj->indices.size * sizeof(int), indices_buffer_data, GL_STATIC_DRAW);// Give our vertices to OpenGL.
-//-----
 	t_elem		*tmp;
 	t_object	*object;
 	MAT4		*transformed_view;
 	MAT4		*transformed_model;
-	// glfwSetCursorPos(scop->window, scop->width / 2, scop->height / 2);
+
+	int		frame = 0;
 	while (!glfwWindowShouldClose(scop->window))
 	{
+		if (frame == 60)
+			frame = 0;
 		glfwGetFramebufferSize(scop->window, &scop->width, &scop->height);
 		glViewport(0, 0, scop->width, scop->height);
-		// update_fov_aspect(projection, to_radians(70.0f), width / height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glUseProgram(shaderProgram);
-//-----
+		glUseProgram(scop->shaderProgram);
 
 		update_main_view(scop);
 		transformed_view = get_transforms(scop->view);
 
-		tmp = scop->object_list.first;
-		glUniformMatrix4fv(view_matrix_id, 1, GL_FALSE, &transformed_view->m[0][0]);
 		glUniformMatrix4fv(projection_matrix_id, 1, GL_FALSE, &projection->m[0][0]);
+		glUniformMatrix4fv(view_matrix_id, 1, GL_FALSE, &transformed_view->m[0][0]);
+
+		tmp = scop->light_list.first;
+		while (tmp)
+		{
+			update_light((t_light *)tmp->data);
+			tmp = tmp->next;
+		}
+		glUniform1i(num_lights_matrix_id, scop->light_list.size);
+
+		tmp = scop->object_list.first;
 		while (tmp)
 		{
 			object = (t_object *)tmp->data;
@@ -246,8 +278,6 @@ int main(int argc, const char *argv[])
 			glUniformMatrix4fv(model_matrix_id, 1, GL_FALSE, &transformed_model->m[0][0]);
 			ft_memdel((void **)&transformed_model);
 
-	//-----
-			// 1rst attribute buffer : vertices
 			glEnableVertexAttribArray(0);
 			glBindBuffer(GL_ARRAY_BUFFER, object->vertex_buffer);
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
@@ -258,7 +288,6 @@ int main(int argc, const char *argv[])
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object->indices_buffer);
 
-			// Draw the triangles !
 			glDrawElements(GL_TRIANGLES, object->indices_size, GL_UNSIGNED_INT, (void*)0);
 
 			glDisableVertexAttribArray(0);
@@ -266,10 +295,10 @@ int main(int argc, const char *argv[])
 			tmp = tmp->next;
 		}
 		ft_memdel((void **)&transformed_view);
-//-----
 
 		glfwSwapBuffers(scop->window);
 		glfwPollEvents();
+		frame++;
 	}
 	glfwDestroyWindow(scop->window);
 	glfwTerminate();

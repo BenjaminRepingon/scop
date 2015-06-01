@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/26 13:52:35 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/05/28 14:46:12 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/01 12:25:13 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ typedef struct		s_obj
 {
 	t_list			vertex;
 	t_list			indices;
+	t_list			normals;
 }					t_obj;
 
 t_obj	*load_obj(const char *file);

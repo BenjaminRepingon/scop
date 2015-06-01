@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/28 11:33:59 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/05/28 14:45:55 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/01 14:29:43 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,6 @@ t_object	*new_object(char const *obj_file)
 	glBufferData(GL_ARRAY_BUFFER, obj->indices.size * sizeof(int), indices_buffer_data, GL_STATIC_DRAW);
 	glGenBuffers(1, &object->normals_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, object->normals_buffer);
-	glBufferData(GL_ARRAY_BUFFER, obj->vertex.size * sizeof(int), normals_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, obj->vertex.size * sizeof(int) * 3, normals_buffer_data, GL_STATIC_DRAW);
 	return (object);
 }

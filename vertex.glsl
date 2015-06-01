@@ -8,9 +8,11 @@ uniform mat4 view;
 uniform mat4 model;
 
 out vec3 fragmentNormal;
+out vec3 vPos;
 
 void main()
 {
 	gl_Position = projection * view * model * vec4(vertexPos, 1);
+	vPos = (model * vec4(vertexPos, 1)).xyz;
 	fragmentNormal = vertexNormal;
 }
