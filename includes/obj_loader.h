@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/26 13:52:35 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/06/01 12:25:13 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/02 16:37:48 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,9 @@ typedef struct		s_obj
 	t_list			normals;
 }					t_obj;
 
-t_obj	*load_obj(const char *file);
-float	*get_vertex_buffer(t_obj *obj);
-int		*get_indices_buffer(t_obj *obj);
-float	*clac_normals(t_obj *obj);
+t_obj				*load_obj(const char *file);
+float				*get_vertex_buffer(t_obj *obj);
+int					*get_indices_buffer(t_obj *obj);
+float				*clac_normals(t_obj *obj);
 
 #endif

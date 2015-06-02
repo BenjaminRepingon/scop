@@ -15,7 +15,8 @@ struct light
 
 #define MAX_LIGHTS 10
 
-uniform	int num_lights;
+uniform	vec3 eyePos;
+uniform	int numLights;
 uniform	light lights[MAX_LIGHTS];
 
 
@@ -47,10 +48,10 @@ void	main(void)
 	vec3 N = normalize(fragmentNormal);
 	vec3 finalColor = vec3(0.0, 0.0, 0.0);
 
-	for (int i = 0; i < num_lights; i++)
+	for (int i = 0; i < numLights; i++)
 	{
 		vec3 L = normalize( lights[i].position - vPos ); //pos
-		vec3 E = normalize( -vPos ); // we are in Eye Coordinates, so EyePos is (0,0,0)
+		vec3 E = normalize( -eyePos - vPos ); // we are in Eye Coordinates, so EyePos is (0,0,0)
 		vec3 R = normalize( -reflect( L, N ) );
 
 		//calculate Ambient Term:
@@ -61,10 +62,10 @@ void	main(void)
 		Idiff = clamp( Idiff, 0.0, 1.0 );
 
 		// calculate Specular Term:
-		vec3 Ispec = lights[i].specular * pow( max( dot( R, E ), 0.0 ), 0.3 * 10);//specular, shininess
+		vec3 Ispec = lights[i].specular * pow( max( dot( R, E ), 0.0 ), 0.3 * 1 );//specular, shininess
 		Ispec = clamp( Ispec, 0.0, 1.0 );
 
-		finalColor += Iamb + Idiff + Ispec + DirectIllumination(vPos, N, lights[i].position, 10.0, finalColor, 0.1);
+		finalColor += DirectIllumination(vPos, N, lights[i].position, 8.0, Iamb + Idiff + Ispec, 0.1);
 	}
 
 	// write Total Color:

@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/26 10:55:32 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/05/26 12:37:45 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/02 16:20:57 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@ static char		*load_file(const char *file)
 		res = ft_strjoin(tmp, "\n");
 		ft_memdel((void **)&tmp);
 	}
-	// close(fd);
 	return (res);
 }
 
@@ -44,7 +43,7 @@ static GLint	compile_shader(const GLchar *shader_code, int type)
 
 	shader_id = glCreateShader(type);
 	result = GL_FALSE;
-	glShaderSource(shader_id, 1, &shader_code , NULL);
+	glShaderSource(shader_id, 1, &shader_code, NULL);
 	glCompileShader(shader_id);
 	glGetShaderiv(shader_id, GL_COMPILE_STATUS, &result);
 	glGetShaderInfoLog(shader_id, GL_ERROR_BUFFER, NULL, shader_error_message);

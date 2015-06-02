@@ -6,300 +6,102 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/20 20:18:35 by zion              #+#    #+#             */
-/*   Updated: 2015/06/01 18:02:27 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/02 16:28:27 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include <stdio.h>
-# include "../includes/scop.h"
+#include "../includes/scop.h"
 
-int		key_pressed[GLFW_KEY_LAST];
-int		button_pressed[GLFW_MOUSE_BUTTON_LAST];
-
-t_scop	*get_scop()
+t_scop		*get_scop(void)
 {
 	static t_scop	scop;
 
 	return (&scop);
 }
 
-static void error_callback(int error, const char* description)
+static void	shader_and_uniforms(t_scop *scop)
 {
-	(void)error;
-	ft_putendl_fd((char *)description, 2);
-}
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	t_scop	*scop;
-	(void)scancode;
-	(void)mods;
-
-	scop = get_scop();
-	if (action == GLFW_PRESS)
-		key_pressed[key] = GL_TRUE;
-	else if (action == GLFW_RELEASE)
-		key_pressed[key] = GL_FALSE;
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-	{
-		if (scop->have_focus)
-			scop->have_focus = 0;
-		else
-			glfwSetWindowShouldClose(window, GL_TRUE);
-		glfwSetInputMode(scop->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	}
-}
-static void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
-{
-	(void)window;
-	(void)button;
-	(void)action;
-	(void)mods;
-
-	if (action == GLFW_PRESS)
-		button_pressed[button] = GL_TRUE;
-	else if (action == GLFW_RELEASE)
-		button_pressed[button] = GL_FALSE;
-	// printf("%lf - %lf\n", x, y);
-}
-
-void	update_main_view(t_scop *scop)
-{
-	double	cursor_x;
-	double	cursor_y;
-	// MAT4	*tmp1;
-	// MAT4	*tmp2;
-	QUAT	*quat;
-
-	scop->motion.x *= 0.8;
-	scop->motion.y *= 0.8;
-	if (scop->motion.x < 1 && scop->motion.x > -1)
-		scop->motion.x = 0;
-	if (scop->motion.y < 1 && scop->motion.y > -1)
-		scop->motion.y = 0;
-	if (button_pressed[GLFW_MOUSE_BUTTON_LEFT])
-	{
-		glfwGetCursorPos(scop->window, &cursor_x, &cursor_y);
-		scop->motion.x += scop->width / 2.0 - cursor_x;
-		scop->motion.y += scop->height / 2.0 - cursor_y;
-	}
-	if (scop->motion.x || scop->motion.y)
-	{
-		if (scop->motion.x)
-		{
-			VEC3	top;
-			top.x = 0;
-			top.y = 1;
-			top.z = 0;
-			quat = new_quaternion4vf(&top, scop->motion.x * -0.002);
-			quat = normalized4(mul4q(quat, &scop->view->rot));
-			scop->view->rot = *quat;
-			ft_memdel((void **)&quat);
-		}
-		if (scop->motion.y)
-		{
-			VEC3	*right = rotate3q(new_vector3f(1, 0, 0), &scop->view->rot);
-			quat = new_quaternion4vf(right, scop->motion.y * -0.002);
-			quat = normalized4(mul4q(quat, &scop->view->rot));
-			scop->view->rot = *quat;
-			ft_memdel((void **)&quat);
-		}
-	}
-	VEC3	*forward = rotate3q(new_vector3f(0, 0, 1), &scop->view->rot);
-	if (key_pressed[GLFW_KEY_W])
-		add3v(&scop->view->pos, mul3f(forward, -0.5f));
-	if (key_pressed[GLFW_KEY_S])
-		add3v(&scop->view->pos, mul3f(forward, 0.5f));
-	ft_memdel((void **)&forward);
-
-	VEC3	*right = rotate3q(new_vector3f(1, 0, 0), &scop->view->rot);
-	if (key_pressed[GLFW_KEY_D])
-		add3v(&scop->view->pos, mul3f(right, -0.5f));
-	if (key_pressed[GLFW_KEY_A])
-		add3v(&scop->view->pos, mul3f(right, 0.5f));
-	ft_memdel((void **)&forward);
-
-	VEC3	*top = rotate3q(new_vector3f(0, 1, 0), &scop->view->rot);
-	if (key_pressed[GLFW_KEY_LEFT_SHIFT])
-		add3v(&scop->view->pos, mul3f(top, 0.5f));
-	if (key_pressed[GLFW_KEY_SPACE])
-		add3v(&scop->view->pos, mul3f(top, -0.5f));
-	ft_memdel((void **)&forward);
-}
-
-void	init_scene(t_scop *scop, const char **argv)
-{
-	t_object	*plan;
-	t_object	*teapot;
-	t_light		*light;
-
-	// OBJECTS
-	plan = new_object("plan.obj");
-	plan->transform->scale.x = 10;
-	plan->transform->scale.y = 10;
-	plan->transform->scale.z = 10;
-	teapot = new_object(argv[1]);
-	add_elem(&scop->object_list, teapot);
-	add_elem(&scop->object_list, plan);
-
-	// LIGHTS
-	light = new_light(scop->shaderProgram, "lights[0]");
-	light->ambient.x = 0.3f;
-	light->ambient.y = 0.0f;
-	light->ambient.z = 0.0f;
-	light->diffuse.x = 0.8f;
-	light->diffuse.y = 0.0f;
-	light->diffuse.z = 0.0f;
-	light->specular.x = 0.8f;
-	light->specular.y = 0.0f;
-	light->specular.z = 0.0f;
-	light->position.x = -5.0f;
-	light->position.y = -2.0f;
-	light->position.z = 10.0f;
-	add_elem(&scop->light_list, light);
-	light = new_light(scop->shaderProgram, "lights[1]");
-	light->ambient.x = 0.5f;
-	light->ambient.y = 0.5f;
-	light->ambient.z = 0.0f;
-	light->diffuse.x = 0.5f;
-	light->diffuse.y = 0.5f;
-	light->diffuse.z = 0.0f;
-	light->specular.x = 0.5f;
-	light->specular.y = 0.5f;
-	light->specular.z = 0.0f;
-	light->position.x = 20.0f;
-	light->position.y = -10.0f;
-	light->position.z = -50.0f;
-	add_elem(&scop->light_list, light);
-}
-
-int main(int argc, const char *argv[])
-{
-	t_scop	*scop;
-	if (argc < 2)
-		return (-1);
-
-	scop = get_scop();
-	scop->motion.x = 0;
-	scop->motion.y = 0;
-	scop->have_focus = 0;
-	glfwSetErrorCallback(error_callback);
-	if (!glfwInit())
-		exit(EXIT_FAILURE);
-
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_SAMPLES, 4);
-
-	scop->window = glfwCreateWindow(850, 550, "Scop", NULL, NULL);
-	if (!scop->window)
-	{
-		glfwTerminate();
-		exit(EXIT_FAILURE);
-	}
-	glfwMakeContextCurrent(scop->window);
-	glfwSwapInterval(1);
-	glfwSetKeyCallback(scop->window, key_callback);
-	glfwSetMouseButtonCallback(scop->window, mouse_button_callback);
-
-	// glEnable(GL_DEPTH_TEST);
-	// glDepthFunc(GL_LESS);
-
-
-	glFrontFace(GL_CW);
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-
-	GLuint vertex_array_id;
-	glGenVertexArrays(1, &vertex_array_id);
-	glBindVertexArray(vertex_array_id);
-
-	scop->shaderProgram = load_shaders("./vertex.glsl", "./fragment.glsl");
-
-	GLint	model_matrix_id = glGetUniformLocation(scop->shaderProgram, "model");
-	GLint	view_matrix_id = glGetUniformLocation(scop->shaderProgram, "view");
-	GLint	projection_matrix_id = glGetUniformLocation(scop->shaderProgram, "projection");
-	GLint	num_lights_matrix_id = glGetUniformLocation(scop->shaderProgram, "num_lights");
-
-
-	// MAT4	*model = init_scale(1, 1, 1);
-
-	VEC3	pos;
-	pos.x = 0;
-	pos.y = 0;
-	pos.z = 0;
-	scop->view = new_transform();
-	scop->view->pos.x = 0;
-	scop->view->pos.y = -3;
-	scop->view->pos.z = 8;
-	MAT4	*projection = init_perspective(to_radians(70.0f), 850.0f / 550.0f, 0.01f, 1000.0f);
-
-	if (scop->shaderProgram == -1)
+	scop->prog = load_shaders("./vertex.glsl", "./fragment.glsl");
+	if (scop->prog == -1)
 		exit_error("Unable to load shaders");
+	scop->uniforms[MODEL] = glGetUniformLocation(scop->prog, "model");
+	scop->uniforms[VIEW] = glGetUniformLocation(scop->prog, "view");
+	scop->uniforms[PROJECTION] = glGetUniformLocation(scop->prog, "projection");
+	scop->uniforms[NUM_LIGHTS] = glGetUniformLocation(scop->prog, "numLights");
+	scop->uniforms[EYE_POS] = glGetUniformLocation(scop->prog, "eyePos");
+}
 
-	init_scene(scop, argv);
+static void	update_objects(t_scop *scop)
+{
 	t_elem		*tmp;
 	t_object	*object;
-	MAT4		*transformed_view;
 	MAT4		*transformed_model;
 
-	int		frame = 0;
+	tmp = scop->object_list.first;
+	while (tmp)
+	{
+		object = (t_object *)tmp->data;
+		transformed_model = get_transforms(object->transform);
+		glUniformMatrix4fv(scop->uniforms[MODEL], 1, GL_FALSE,\
+			&transformed_model->m[0][0]);
+		ft_memdel((void **)&transformed_model);
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, object->vertex_buffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, object->normals_buffer);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object->indices_buffer);
+		glDrawElements(GL_TRIANGLES, object->indices_size, GL_UNSIGNED_INT, \
+			(void*)0);
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+		tmp = tmp->next;
+	}
+}
+
+static void	main_loop(t_scop *scop)
+{
+	MAT4		*transformed_view;
+
 	while (!glfwWindowShouldClose(scop->window))
 	{
-		if (frame == 60)
-			frame = 0;
+		scop->frame = (scop->frame == 60) ? 0 : scop->frame;
 		glfwGetFramebufferSize(scop->window, &scop->width, &scop->height);
 		glViewport(0, 0, scop->width, scop->height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		glUseProgram(scop->shaderProgram);
-
+		glUseProgram(scop->prog);
 		update_main_view(scop);
+		update_scene(scop);
 		transformed_view = get_transforms(scop->view);
-
-		glUniformMatrix4fv(projection_matrix_id, 1, GL_FALSE, &projection->m[0][0]);
-		glUniformMatrix4fv(view_matrix_id, 1, GL_FALSE, &transformed_view->m[0][0]);
-
-		tmp = scop->light_list.first;
-		while (tmp)
-		{
-			update_light((t_light *)tmp->data);
-			tmp = tmp->next;
-		}
-		glUniform1i(num_lights_matrix_id, scop->light_list.size);
-
-		tmp = scop->object_list.first;
-		while (tmp)
-		{
-			object = (t_object *)tmp->data;
-			transformed_model = get_transforms(object->transform);
-			glUniformMatrix4fv(model_matrix_id, 1, GL_FALSE, &transformed_model->m[0][0]);
-			ft_memdel((void **)&transformed_model);
-
-			glEnableVertexAttribArray(0);
-			glBindBuffer(GL_ARRAY_BUFFER, object->vertex_buffer);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-			glEnableVertexAttribArray(1);
-			glBindBuffer(GL_ARRAY_BUFFER, object->normals_buffer);
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object->indices_buffer);
-
-			glDrawElements(GL_TRIANGLES, object->indices_size, GL_UNSIGNED_INT, (void*)0);
-
-			glDisableVertexAttribArray(0);
-			glDisableVertexAttribArray(1);
-			tmp = tmp->next;
-		}
+		glUniformMatrix4fv(scop->uniforms[PROJECTION], 1, GL_FALSE, \
+			&scop->projection->m[0][0]);
+		glUniformMatrix4fv(scop->uniforms[VIEW], 1, GL_FALSE, \
+			&transformed_view->m[0][0]);
+		glUniform3f(scop->uniforms[EYE_POS], scop->view->pos.x, \
+			scop->view->pos.y, scop->view->pos.z);
+		update_lights(scop);
+		update_objects(scop);
 		ft_memdel((void **)&transformed_view);
-
 		glfwSwapBuffers(scop->window);
 		glfwPollEvents();
-		frame++;
+		scop->frame++;
 	}
+}
+
+int			main(int argc, const char *argv[])
+{
+	t_scop	*scop;
+
+	if (argc < 2)
+		return (-1);
+	scop = get_scop();
+	scop->frame = 0;
+	pre_win_init();
+	win_init("Scop", 850, 550);
+	shader_and_uniforms(scop);
+	init_scene(scop, argv);
+	main_loop(scop);
 	glfwDestroyWindow(scop->window);
 	glfwTerminate();
 	exit(EXIT_SUCCESS);

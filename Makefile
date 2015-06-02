@@ -6,7 +6,7 @@
 #    By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/02/26 13:13:47 by rbenjami          #+#    #+#              #
-#    Updated: 2015/06/01 15:04:19 by rbenjami         ###   ########.fr        #
+#    Updated: 2015/06/02 16:08:34 by rbenjami         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,8 +33,12 @@ SRC_DIR			=	srcs/
 FILES			=	$(NAME).c		\
 					shader.c		\
 					obj_loader.c	\
+					obj_loader2.c	\
 					object.c		\
-					light.c
+					light.c			\
+					glfw_init.c		\
+					event.c			\
+					scene.c
 
 SRC				=	$(addprefix $(SRC_DIR)/, $(FILES))
 

@@ -6,11 +6,11 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/06/01 15:03:11 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/06/01 17:25:33 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/02 16:05:26 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/light.h"
+#include "../includes/scop.h"
 
 t_light		*new_light(GLint program, const char *name)
 {
@@ -36,8 +36,25 @@ t_light		*new_light(GLint program, const char *name)
 
 void		update_light(t_light *light)
 {
-	glUniform3f(light->location_ambient, light->ambient.x, light->ambient.y, light->ambient.z);
-	glUniform3f(light->location_diffuse, light->diffuse.x, light->diffuse.y, light->diffuse.z);
-	glUniform3f(light->location_specular, light->specular.x, light->specular.y, light->specular.z);
-	glUniform3f(light->location_position, light->position.x, light->position.y, light->position.z);
+	glUniform3f(light->location_ambient, light->ambient.x, \
+		light->ambient.y, light->ambient.z);
+	glUniform3f(light->location_diffuse, light->diffuse.x, \
+		light->diffuse.y, light->diffuse.z);
+	glUniform3f(light->location_specular, light->specular.x, \
+		light->specular.y, light->specular.z);
+	glUniform3f(light->location_position, light->position.x, \
+		light->position.y, light->position.z);
+}
+
+void		update_lights(t_scop *scop)
+{
+	t_elem	*tmp;
+
+	tmp = scop->light_list.first;
+	while (tmp)
+	{
+		update_light((t_light *)tmp->data);
+		tmp = tmp->next;
+	}
+	glUniform1i(scop->uniforms[NUM_LIGHTS], scop->light_list.size);
 }
