@@ -13,6 +13,15 @@ struct light
 	vec3	position;
 };
 
+struct material
+{
+	vec3	ka;
+	vec3	kd;
+	vec3	ks;
+	float	d;
+	float	ns;
+	int		illum;
+};
 #define MAX_LIGHTS 10
 
 uniform	vec3 eyePos;

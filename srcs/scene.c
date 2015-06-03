@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/06/02 15:57:19 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/06/02 16:34:33 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/03 13:44:02 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,9 @@ void		init_scene(t_scop *scop, const char **argv)
 	cube->transform->scale.z = 15;
 	cube->transform->pos.y = 1;
 	teapot = new_object(argv[1]);
+	teapot->transform->scale.x = 0.05;
+	teapot->transform->scale.y = 0.05;
+	teapot->transform->scale.z = 0.05;
 	add_elem(&scop->object_list, teapot);
 	add_elem(&scop->object_list, cube);
 	init_light(scop);

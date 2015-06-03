@@ -6,12 +6,12 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/26 13:52:24 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/06/02 16:15:21 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/03 14:38:23 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <fcntl.h>
-#include "../includes/obj_loader.h"
+#include "../includes/object.h"
 
 static void	put_indices(t_list *indices_list, int a, int b, int c)
 {
@@ -26,9 +26,12 @@ static void	put_indices(t_list *indices_list, int a, int b, int c)
 	add_elem(indices_list, &indices[2]);
 }
 
-static void	add_v_f(t_obj *obj, char **tmp)
+static int	add_v_f(t_obj *obj, char **tmp)
 {
-	if (tmp[0][0] == 'v')
+	int		res;
+
+	res = 1;
+	if (ft_strlen(tmp[0]) == 1 && tmp[0][0] == 'v')
 		add_elem(&obj->vertex, new_vector3f(ft_atof(tmp[1]), ft_atof(tmp[2]), \
 			ft_atof(tmp[3])));
 	else if (tmp[0][0] == 'f')
@@ -39,6 +42,12 @@ static void	add_v_f(t_obj *obj, char **tmp)
 			put_indices(&obj->indices, ft_atoi(tmp[3]) - 1, \
 				ft_atoi(tmp[4]) - 1, ft_atoi(tmp[1]) - 1);
 	}
+	else if (ft_strlen(tmp[0]) > 1 && tmp[0][0] == 'v' && tmp[0][1] == 'n')
+		add_elem(&obj->normals, new_vector3f(ft_atof(tmp[1]), ft_atof(tmp[2]), \
+			ft_atof(tmp[3])));
+	else
+		res = 0;
+	return (res);
 }
 
 t_obj		*load_obj(const char *file)
@@ -47,12 +56,15 @@ t_obj		*load_obj(const char *file)
 	int		fd;
 	char	*line;
 	char	**tmp;
+	char	*mtllib;
 
+	mtllib = NULL;
 	if ((obj = ft_memalloc(sizeof(t_obj))) == NULL)
 		return (NULL);
+	obj->normals.size = 0;
 	if ((fd = open(file, O_RDONLY)) == -1)
 	{
-		exit_error("Can't fint .obj");
+		exit_error("Can't find .obj");
 		return (NULL);
 	}
 	while (get_next_line(fd, &line) != 0)
@@ -60,48 +72,47 @@ t_obj		*load_obj(const char *file)
 		tmp = ft_strsplit(line, ' ');
 		if (ft_tabsize((void **)tmp) < 2)
 			continue ;
-		add_v_f(obj, tmp);
+		if (!add_v_f(obj, tmp) && ft_strcmp(tmp[0], "mtllib") == 0)
+			mtllib = ft_strdup(line + 7);
 		ft_freetab((void **)tmp);
 		ft_memdel((void **)&line);
 	}
+	if (mtllib)
+		load_material_lib(obj, mtllib, file);
 	return (obj);
 }
 
-float		*get_vertex_buffer(t_obj *obj)
+VEC3		*get_vertex_buffer(t_obj *obj)
 {
 	t_elem	*elem;
 	int		i;
-	float	*buffer;
-	VEC3	*vec;
+	VEC3	*buffer;
 
-	if ((buffer = ft_memalloc(sizeof(float) * 3 * obj->vertex.size)) == NULL)
+	if ((buffer = ft_memalloc(sizeof(VEC3) * obj->vertex.size)) == NULL)
 		return (NULL);
 	elem = obj->vertex.first;
 	i = 0;
 	while (elem)
 	{
-		vec = (VEC3 *)elem->data;
-		buffer[i++] = vec->x;
-		buffer[i++] = vec->y;
-		buffer[i++] = vec->z;
+		buffer[i++] = *(VEC3 *)elem->data;
 		elem = elem->next;
 	}
 	return (buffer);
 }
 
-int			*get_indices_buffer(t_obj *obj)
+GLuint		*get_indices_buffer(t_obj *obj)
 {
 	t_elem	*elem;
 	int		i;
-	int		*buffer;
+	GLuint	*buffer;
 
-	if ((buffer = ft_memalloc(sizeof(float) * 3 * obj->indices.size)) == NULL)
+	if ((buffer = ft_memalloc(sizeof(GLuint) * obj->indices.size)) == NULL)
 		return (NULL);
 	elem = obj->indices.first;
 	i = 0;
 	while (elem)
 	{
-		buffer[i++] = *((int *)elem->data);
+		buffer[i++] = *((GLuint *)elem->data);
 		elem = elem->next;
 	}
 	return (buffer);
