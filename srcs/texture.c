@@ -1,30 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   obj_loader.h                                       :+:      :+:    :+:   */
+/*   texture.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2015/05/26 13:52:35 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/06/02 16:37:48 by rbenjami         ###   ########.fr       */
+/*   Created: 2015/06/04 10:54:16 by rbenjami          #+#    #+#             */
+/*   Updated: 2015/06/04 11:29:53 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef OBJ_LOADER_H
-# define OBJ_LOADER_H
+#include "../includes/scop.h"
 
-# include <libft.h>
-
-typedef struct		s_obj
+t_texture	*new_texture(const char *file)
 {
-	t_list			vertex;
-	t_list			indices;
-	t_list			normals;
-}					t_obj;
+	t_texture	*tex;
+	int			fd;
 
-t_obj				*load_obj(const char *file);
-float				*get_vertex_buffer(t_obj *obj);
-int					*get_indices_buffer(t_obj *obj);
-float				*clac_normals(t_obj *obj);
-
-#endif
+	if ((tex = ft_memalloc(sizeof(t_texture))) == NULL)
+		return (NULL);
+	fd = open();
+	fi (read(fd, tex->header, BMP_HEADER) != BMP_HEADER)
+		exit_error("Bad bmp file");
+	tex->data_pos = ;
+	tex->width = ;
+	tex->height = ;
+	tex->size = ;
+	tex->*data = ;
+}

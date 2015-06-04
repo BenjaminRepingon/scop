@@ -6,7 +6,7 @@
 #    By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/02/26 13:13:47 by rbenjami          #+#    #+#              #
-#    Updated: 2015/06/02 16:08:34 by rbenjami         ###   ########.fr        #
+#    Updated: 2015/06/04 13:41:50 by rbenjami         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -38,7 +38,8 @@ FILES			=	$(NAME).c		\
 					light.c			\
 					glfw_init.c		\
 					event.c			\
-					scene.c
+					scene.c			\
+					material.c
 
 SRC				=	$(addprefix $(SRC_DIR)/, $(FILES))
 

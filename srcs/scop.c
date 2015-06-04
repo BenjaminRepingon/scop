@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/20 20:18:35 by zion              #+#    #+#             */
-/*   Updated: 2015/06/02 16:28:27 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/04 16:24:37 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,33 +29,49 @@ static void	shader_and_uniforms(t_scop *scop)
 	scop->uniforms[PROJECTION] = glGetUniformLocation(scop->prog, "projection");
 	scop->uniforms[NUM_LIGHTS] = glGetUniformLocation(scop->prog, "numLights");
 	scop->uniforms[EYE_POS] = glGetUniformLocation(scop->prog, "eyePos");
+
+	scop->location_ka = glGetUniformLocation(scop->prog, "materials.ka");
+	scop->location_kd = glGetUniformLocation(scop->prog, "materials.kd");
+	scop->location_ks = glGetUniformLocation(scop->prog, "materials.ks");
+	scop->location_d = glGetUniformLocation(scop->prog, "materials.d");
+	scop->location_ns = glGetUniformLocation(scop->prog, "materials.ns");
+	scop->location_illum = glGetUniformLocation(scop->prog, "materials.illum");
 }
 
 static void	update_objects(t_scop *scop)
 {
 	t_elem		*tmp;
+	t_elem		*tmp2;
+	t_obj		*obj;
 	t_object	*object;
 	MAT4		*transformed_model;
 
 	tmp = scop->object_list.first;
 	while (tmp)
 	{
-		object = (t_object *)tmp->data;
-		transformed_model = get_transforms(object->transform);
+		obj = (t_obj *)tmp->data;
+		transformed_model = get_transforms(obj->transform);
 		glUniformMatrix4fv(scop->uniforms[MODEL], 1, GL_FALSE,\
 			&transformed_model->m[0][0]);
 		ft_memdel((void **)&transformed_model);
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, object->vertex_buffer);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ARRAY_BUFFER, object->normals_buffer);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object->indices_buffer);
-		glDrawElements(GL_TRIANGLES, object->indices_size, GL_UNSIGNED_INT, \
-			(void*)0);
-		glDisableVertexAttribArray(0);
-		glDisableVertexAttribArray(1);
+
+		tmp2 = obj->objects.first;
+		while (tmp2)
+		{
+			object = (t_object *)tmp2->data;
+			update_material_uniform(scop, object->material);
+			glEnableVertexAttribArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER, object->vertex_buffer);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+			glEnableVertexAttribArray(1);
+			glBindBuffer(GL_ARRAY_BUFFER, object->normals_buffer);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object->indices_buffer);
+			glDrawElements(GL_TRIANGLES, object->indices_size, GL_UNSIGNED_INT, (void*)0);
+			glDisableVertexAttribArray(0);
+			glDisableVertexAttribArray(1);
+			tmp2 = tmp2->next;
+		}
 		tmp = tmp->next;
 	}
 }

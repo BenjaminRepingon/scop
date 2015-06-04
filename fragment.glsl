@@ -3,7 +3,7 @@
 in vec3 fragmentNormal;
 in vec3 vPos;
 
-out vec3 color;
+out vec4 color;
 
 struct light
 {
@@ -13,12 +13,22 @@ struct light
 	vec3	position;
 };
 
+struct material
+{
+	vec3	ka;
+	vec3	kd;
+	vec3	ks;
+	float	d;
+	float	ns;
+	int		illum;
+};
+
 #define MAX_LIGHTS 10
 
 uniform	vec3 eyePos;
 uniform	int numLights;
 uniform	light lights[MAX_LIGHTS];
-
+uniform	material materials;
 
 vec3	DirectIllumination(vec3 P, vec3 N, vec3 lightCentre, float lightRadius, vec3 lightColour, float cutoff)
 {
@@ -31,7 +41,7 @@ vec3	DirectIllumination(vec3 P, vec3 N, vec3 lightCentre, float lightRadius, vec
 
 	// calculate basic attenuation
 	float denom = d/r + 1;
-	float attenuation = 1 / (denom*denom);
+	float attenuation = 1 / (denom * denom);
 
 	// scale and bias attenuation such that:
 	//	attenuation == 0 at extent of max influence
@@ -55,19 +65,19 @@ void	main(void)
 		vec3 R = normalize( -reflect( L, N ) );
 
 		//calculate Ambient Term:
-		vec3 Iamb = lights[i].ambient; //ambiant
+		vec3 Iamb = normalize(lights[i].ambient * materials.ka); //ambiant
 
 		//calculate Diffuse Term:
-		vec3 Idiff = lights[i].diffuse * max( dot( N, L ), 0.0 ); //difuse
+		vec3 Idiff = normalize(lights[i].diffuse * materials.kd) * max( dot( N, L ), 0.0 ); //difuse
 		Idiff = clamp( Idiff, 0.0, 1.0 );
 
 		// calculate Specular Term:
-		vec3 Ispec = lights[i].specular * pow( max( dot( R, E ), 0.0 ), 0.3 * 1 );//specular, shininess
+		vec3 Ispec = normalize(lights[i].specular * materials.ks) * pow( max( dot( R, E ), 0.0 ), 0.3 * materials.illum );//specular, shininess
 		Ispec = clamp( Ispec, 0.0, 1.0 );
 
 		finalColor += DirectIllumination(vPos, N, lights[i].position, 8.0, Iamb + Idiff + Ispec, 0.1);
 	}
 
 	// write Total Color:
-	color = finalColor;
+	color = vec4(finalColor, materials.d);
 }

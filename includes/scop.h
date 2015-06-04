@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/20 20:18:45 by zion              #+#    #+#             */
-/*   Updated: 2015/06/02 16:37:54 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/04 15:52:30 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,10 @@
 # define SCOP_H
 
 # include <libft.h>
-# include "object.h"
 # define GLFW_INCLUDE_GLCOREARB
 # include <GLFW/glfw3.h>
+
+# define BMP_HEADER 54
 
 enum				e_uniform
 {
@@ -27,6 +28,16 @@ enum				e_uniform
 	EYE_POS,
 	SIZE
 };
+
+typedef struct		s_texture
+{
+	unsigned char	header[BMP_HEADER];
+	size_t			data_pos;
+	size_t			width;
+	size_t			height;
+	size_t			size;
+	unsigned char	*data;
+}					t_texture;
 
 typedef struct		s_scop
 {
@@ -44,6 +55,12 @@ typedef struct		s_scop
 	MAT4			*projection;
 	GLint			uniforms[SIZE];
 	int				frame;
+	GLuint			location_ka;
+	GLuint			location_kd;
+	GLuint			location_ks;
+	GLuint			location_d;
+	GLuint			location_ns;
+	GLuint			location_illum;
 }					t_scop;
 
 typedef struct		s_light
@@ -57,6 +74,50 @@ typedef struct		s_light
 	GLint			location_specular;
 	GLint			location_position;
 }					t_light;
+
+typedef struct		s_material
+{
+	char			*newmtl;
+	VEC3			ka;
+	VEC3			kd;
+	VEC3			ks;
+	float			d;
+	float			ns;
+	int				illum;
+}					t_material;
+
+typedef struct		s_object
+{
+	GLuint			vertex_buffer;
+	GLuint			indices_buffer;
+	GLuint			normals_buffer;
+	VEC3			*v_data;
+	GLuint			*i_v_data;
+	VEC3			*n_data;
+	t_list			vertex;
+	t_list			indices;
+	t_list			normals;
+	int				indices_size;
+	t_material		*material;
+	char			*usemtl;
+}					t_object;
+
+typedef struct		s_obj
+{
+	TRAN			*transform;
+	t_list			materials;
+	t_list			objects;
+}					t_obj;
+
+t_obj				*load_obj(const char *file);
+VEC3				*get_vertex_buffer(t_object *obj);
+GLuint				*get_indices_buffer(t_object *obj);
+VEC3				*get_normals_buffer(t_object *object);
+void				gen_buffers(t_object *object);
+
+t_object			*new_object();
+
+void				load_material_lib(t_obj *obj, char *file, char *obj_file);
 
 t_light				*new_light(GLint program, const char *name);
 void				update_light(t_light *light);
