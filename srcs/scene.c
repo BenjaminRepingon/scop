@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/06/02 15:57:19 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/06/04 16:32:43 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/05 10:11:11 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,14 +110,14 @@ void		update_scene(t_scop *scop)
 	while (elem)
 	{
 		object = (t_obj *)elem->data;
-		// if (i == 0)
-		// {
-		// 	v = rotate3q(new_vector3f(0, 1, 0), &object->transform->rot);
-		// 	quat = new_quaternion4vf(v, to_radians(20));
-		// 	quat = normalized4(mul4q(quat, &object->transform->rot));
-		// 	object->transform->rot = *quat;
-		// 	ft_memdel((void **)&quat);
-		// }
+		if (i == 0)
+		{
+			v = rotate3q(new_vector3f(0, 1, 0), &object->transform->rot);
+			quat = new_quaternion4vf(v, to_radians(20));
+			quat = normalized4(mul4q(quat, &object->transform->rot));
+			object->transform->rot = *quat;
+			ft_memdel((void **)&quat);
+		}
 		elem = elem->next;
 		i++;
 	}

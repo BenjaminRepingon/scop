@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/26 13:52:24 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/06/04 15:49:35 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/05 10:07:41 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ t_obj		*load_obj(const char *file)
 	i = 0;
 	object = new_object();
 
+	mtllib = NULL;
 	if ((obj = ft_memalloc(sizeof(t_obj))) == NULL)
 		return (NULL);
 	obj->transform = new_transform();
