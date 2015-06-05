@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/26 10:55:32 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/06/02 16:20:57 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/05 10:32:20 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ static char		*load_file(const char *file)
 		res = ft_strjoin(tmp, "\n");
 		ft_memdel((void **)&tmp);
 	}
+	if (line)
+		ft_memdel((void **)&line);
 	return (res);
 }
 

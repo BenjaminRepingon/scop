@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/06/03 13:47:22 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/06/05 10:06:53 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/05 12:24:34 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void	update_material_uniform(t_scop *scop, t_material *mat)
 		glUniform3f(scop->location_kd, 1.0f, 1.0f, 1.0f);
 		glUniform3f(scop->location_ks, 1.0f, 1.0f, 1.0f);
 		glUniform1f(scop->location_d, 1);
-		glUniform1f(scop->location_ns, 2);
+		glUniform1f(scop->location_ns, 1);
 		glUniform1i(scop->location_illum, 1);
 	}
 }
@@ -72,7 +72,6 @@ static t_material	*find_material(t_obj *obj, char *name)
 	t_elem		*elem;
 	t_material	*mat;
 
-printf("pok\n");
 	elem = obj->materials.first;
 	while (elem)
 	{
@@ -107,14 +106,20 @@ void		load_material_lib(t_obj *obj, char *file, char *obj_file)
 	t_material	*material;
 
 	material = NULL;
-	ft_putendl(file_path(file, obj_file));
-	if ((fd = open(file_path(file, obj_file), O_RDONLY)) == -1)
+	file = file_path(file, obj_file);
+	ft_putendl(file);
+	if ((fd = open(file, O_RDONLY)) == -1)
 		exit_error("Can't find .mtl");
+	ft_memdel((void **)&file);
 	while (get_next_line(fd, &line) != 0)
 	{
 		tmp = ft_strsplit(line, ' ');
 		if (ft_strlen(line) <= 1)
+		{
+			ft_freetab((void **)tmp);
+			ft_memdel((void **)&line);
 			continue ;
+		}
 		if (ft_strcmp(tmp[0], "newmtl") == 0)
 		{
 			if (material)
@@ -132,6 +137,8 @@ void		load_material_lib(t_obj *obj, char *file, char *obj_file)
 		ft_freetab((void **)tmp);
 		ft_memdel((void **)&line);
 	}
+	if (line)
+		ft_memdel((void **)&line);
 	if (material)
 		add_elem(&obj->materials, material);
 	assign_material(obj);

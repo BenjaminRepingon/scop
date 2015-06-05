@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/20 20:18:35 by zion              #+#    #+#             */
-/*   Updated: 2015/06/04 16:24:37 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/05 10:41:17 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,14 +22,13 @@ t_scop		*get_scop(void)
 static void	shader_and_uniforms(t_scop *scop)
 {
 	scop->prog = load_shaders("./vertex.glsl", "./fragment.glsl");
-	if (scop->prog == -1)
-		exit_error("Unable to load shaders");
+	// if (scop->prog == -1)
+	// 	exit_error("Unable to load shaders");
 	scop->uniforms[MODEL] = glGetUniformLocation(scop->prog, "model");
 	scop->uniforms[VIEW] = glGetUniformLocation(scop->prog, "view");
 	scop->uniforms[PROJECTION] = glGetUniformLocation(scop->prog, "projection");
 	scop->uniforms[NUM_LIGHTS] = glGetUniformLocation(scop->prog, "numLights");
 	scop->uniforms[EYE_POS] = glGetUniformLocation(scop->prog, "eyePos");
-
 	scop->location_ka = glGetUniformLocation(scop->prog, "materials.ka");
 	scop->location_kd = glGetUniformLocation(scop->prog, "materials.kd");
 	scop->location_ks = glGetUniformLocation(scop->prog, "materials.ks");

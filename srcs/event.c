@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/06/02 15:12:52 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/06/02 16:28:38 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/05 10:42:29 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,10 @@ static void	cam_update(t_scop *scop)
 		}
 		if (scop->motion.y)
 		{
-			v = rotate3q(new_vector3f(1, 0, 0), &scop->view->rot);
+			v = new_vector3f(1, 0, 0);
+			v = rotate3q(v, &scop->view->rot);
 			quat = new_quaternion4vf(v, scop->motion.y * -0.002);
+			ft_memdel((void **)&v);
 			quat = normalized4(mul4q(quat, &scop->view->rot));
 			scop->view->rot = *quat;
 			ft_memdel((void **)&quat);

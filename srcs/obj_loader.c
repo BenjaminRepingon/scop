@@ -6,7 +6,7 @@
 /*   By: rbenjami <rbenjami@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/26 13:52:24 by rbenjami          #+#    #+#             */
-/*   Updated: 2015/06/05 10:07:41 by rbenjami         ###   ########.fr       */
+/*   Updated: 2015/06/05 12:12:37 by rbenjami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,8 +73,6 @@ t_obj		*load_obj(const char *file)
 	offset = 0;
 	i = 0;
 	object = new_object();
-
-	mtllib = NULL;
 	if ((obj = ft_memalloc(sizeof(t_obj))) == NULL)
 		return (NULL);
 	obj->transform = new_transform();
@@ -89,16 +87,21 @@ t_obj		*load_obj(const char *file)
 		tmp = ft_strsplit(line, ' ');
 		if (ft_strlen(line) == 1 && last == 'f')
 		{
-			// printf("line: %i\n", i);
 			gen_buffers(object);
 			offset += object->vertex.size;
-			// printf("offset: %i\n", offset);
 			add_elem(&obj->objects, object);
 			last = 0;
 			object = new_object();
+			ft_freetab((void **)tmp);
+			ft_memdel((void **)&line);
+			continue ;
 		}
 		if (ft_tabsize((void **)tmp) < 2)
+		{
+			ft_freetab((void **)tmp);
+			ft_memdel((void **)&line);
 			continue ;
+		}
 		if (ft_strcmp(tmp[0], "usemtl") == 0)
 			object->usemtl = ft_strdup(tmp[1]);
 		if (!add_v_f(object, tmp, &last, offset) && ft_strcmp(tmp[0], "mtllib") == 0)
@@ -106,10 +109,15 @@ t_obj		*load_obj(const char *file)
 		ft_freetab((void **)tmp);
 		ft_memdel((void **)&line);
 	}
+	if (line)
+		ft_memdel((void **)&line);
 	gen_buffers(object);
 	add_elem(&obj->objects, object);
 	if (mtllib)
+	{
 		load_material_lib(obj, mtllib, (char *)file);
+		ft_memdel((void **)&mtllib);
+	}
 	return (obj);
 }
 

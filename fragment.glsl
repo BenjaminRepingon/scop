@@ -30,28 +30,28 @@ uniform	int numLights;
 uniform	light lights[MAX_LIGHTS];
 uniform	material materials;
 
-vec3	DirectIllumination(vec3 P, vec3 N, vec3 lightCentre, float lightRadius, vec3 lightColour, float cutoff)
-{
-	// calculate normalized light vector and distance to sphere light surface
-	float r = lightRadius;
-	vec3 L = lightCentre - P;
-	float distance = length(L);
-	float d = max(distance - r, 0);
-	L /= distance;
+// vec3	DirectIllumination(vec3 P, vec3 N, vec3 lightCentre, float lightRadius, vec3 lightColour, float cutoff)
+// {
+// 	// calculate normalized light vector and distance to sphere light surface
+// 	float r = lightRadius;
+// 	vec3 L = lightCentre - P;
+// 	float distance = length(L);
+// 	float d = max(distance - r, 0);
+// 	L /= distance;
 
-	// calculate basic attenuation
-	float denom = d/r + 1;
-	float attenuation = 1 / (denom * denom);
+// 	// calculate basic attenuation
+// 	float denom = d/r + 1;
+// 	float attenuation = 1 / (denom * denom);
 
-	// scale and bias attenuation such that:
-	//	attenuation == 0 at extent of max influence
-	//	attenuation == 1 when d == 0
-	attenuation = (attenuation - cutoff) / (1 - cutoff);
-	attenuation = max(attenuation, 0);
+// 	// scale and bias attenuation such that:
+// 	//	attenuation == 0 at extent of max influence
+// 	//	attenuation == 1 when d == 0
+// 	attenuation = (attenuation - cutoff) / (1 - cutoff);
+// 	attenuation = max(attenuation, 0);
 
-	float dot = max(dot(L, N), 0);
-	return lightColour * dot * attenuation;
-}
+// 	float dot = max(dot(L, N), 0);
+// 	return lightColour * dot * attenuation;
+// }
 
 void	main(void)
 {
@@ -68,14 +68,42 @@ void	main(void)
 		vec3 Iamb = normalize(lights[i].ambient * materials.ka); //ambiant
 
 		//calculate Diffuse Term:
-		vec3 Idiff = normalize(lights[i].diffuse * materials.kd) * max( dot( N, L ), 0.0 ); //difuse
-		Idiff = clamp( Idiff, 0.0, 1.0 );
+		float diffuseFactor = clamp(dot(N, -L), 0.0, 1.0);
+		vec3 Idiff = normalize(lights[i].diffuse * materials.kd) * diffuseFactor; //difuse
+		// Idiff = clamp( Idiff, 0.0, 1.0 );
 
 		// calculate Specular Term:
-		vec3 Ispec = normalize(lights[i].specular * materials.ks) * pow( max( dot( R, E ), 0.0 ), 0.3 * materials.illum );//specular, shininess
-		Ispec = clamp( Ispec, 0.0, 1.0 );
+		float specularFactor = dot(R, E);
+		specularFactor = clamp(pow(specularFactor, 0.5 * materials.illum), 0.0, 1.0);
+		vec3 Ispec  = vec3(0, 0, 0);
+		if (specularFactor > 0)
+		{
+			Ispec = normalize(lights[i].specular * materials.ks) * 0.5 * materials.illum * specularFactor;
+		}
+		// vec3 Ispec = normalize(lights[i].specular * materials.ks) * pow( max( dot( R, E ), 0.0 ), 0.5 * materials.illum );//specular, shininess
+		// Ispec = clamp( Ispec, 0.0, 1.0 );
 
-		finalColor += DirectIllumination(vPos, N, lights[i].position, 8.0, Iamb + Idiff + Ispec, 0.1);
+
+		float r = 8.0;
+		float cutoff = 0.00;
+		L = lights[i].position - vPos;
+		float distance = length(L);
+		float d = max(distance - r, 0.0);
+		L /= distance;
+
+		// calculate basic attenuation
+		float denom = d / r + 1;
+		float attenuation = 1 / (denom * denom);
+
+		// scale and bias attenuation such that:
+		//	attenuation == 0 at extent of max influence
+		//	attenuation == 1 when d == 0
+		attenuation = ( attenuation - cutoff ) / ( 1 - cutoff );
+		attenuation = max(attenuation, 0 );
+
+		float dot = max( dot( L, N ), 0 );
+		finalColor += (Iamb + Idiff + Ispec) * attenuation;
+		//finalColor += DirectIllumination(vPos, N, lights[i].position, 8.0, Iamb + Idiff + Ispec, 0.1);
 	}
 
 	// write Total Color:
